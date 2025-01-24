@@ -3,6 +3,7 @@
 
 
 #include <iostream>
+#include <chrono>               //Se agrego la libreria para medir el tiempo de ejecución.
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -10,9 +11,9 @@
 #define omp_get_thread_num() 0
 #endif
 
-#define N 1000
-#define chunk 100
-#define mostrar 10
+#define N 10000
+#define chunk 500
+#define mostrar 100
 
 void imprimeArreglo(float* d);
 
@@ -29,12 +30,19 @@ int main()
     }
     int pedazos = chunk;
 
-#pragma omp parallel for \
+    auto start = std::chrono::high_resolution_clock::now();
+
+    #pragma omp parallel for \
     shared(a, b, c, pedazos) private(i) \
     schedule(static, pedazos)
 
     for (i = 0; i < N; i++)
         c[i] = a[i] + b[i];
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+
+    std::cout << "Tiempo de ejecucion del calculo paralelo: " << duration.count() << " segundos\n";
 
     std::cout << "Imprimiendo los primeros " << mostrar << " valores del arreglo a: " << std::endl;
     imprimeArreglo(a);
